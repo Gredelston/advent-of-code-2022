@@ -1,25 +1,32 @@
 #!/usr/bin/env python3
 
-USE_SAMPLE = True
+
+def part1(use_sample: bool = False) -> None:
+    """Solve part 1 of today's problem."""
+    file_contents = load_file_contents(use_sample)
 
 
-def part1():
-    """Solve and print the solution to part 1 of today's problem."""
-    file_contents = load_file_contents()
+def part2(use_sample: bool = False) -> None:
+    """Solve part 1 of today's problem."""
+    file_contents = load_file_contents(use_sample)
 
 
-def part2():
-    """Solve and print the solution to part 1 of today's problem."""
-    file_contents = load_file_contents()
+def load_file_contents(use_sample: bool) -> list[str]:
+    """Load the input file to strings.
 
-
-def load_file_contents() -> list[str]:
-    fp = 'sample.txt' if USE_SAMPLE else 'input.txt'
+    Args:
+        use_sample: Option to use the sample input instead of the real input.
+    """
+    fp = 'sample.txt' if use_sample else 'input.txt'
     with open(fp) as f:
         lines = f.readlines()
     return [line.strip() for line in lines]
 
 
 if __name__ == '__main__':
-    part1()
-    part2()
+    print('Samples:')
+    print(f'\tPart 1: {part1(True)}')
+    print(f'\tPart 2: {part2(True)}')
+    print('Real input:')
+    print(f'\tPart 1: {part1(False)}')
+    print(f'\tPart 2: {part2(False)}')
