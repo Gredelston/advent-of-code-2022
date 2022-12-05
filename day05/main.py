@@ -10,12 +10,15 @@ class Crate(str):
 
 
 class Stack(list[Crate]):
-    """A stack of crates. Good for append() and pop()."""
+    """A stack of crates."""
     def __init__(self, crates: list[Crate]):
         self._crates = crates
 
     def pop(self) -> Crate:
         return self._crates.pop()
+
+    def peek(self) -> Crate:
+        return self._crates[-1]
 
     def append(self, crate: Crate):
         self._crates.append(crate)
@@ -55,15 +58,9 @@ class Crane:
         to_stack.extend(crates)
 
     
-    def perform_procedure(self, file_contents: list[str],
+    def perform_procedure(self, instructions: list[str],
             move_together: bool = False):
-        started_instructions = False
-        for line in file_contents:
-            if not line:
-                started_instructions = True
-                continue
-            if not started_instructions:
-                continue
+        for line in instructions:
             m = re.match(r'^move (\d+) from (\d+) to (\d+)$', line)
             assert m is not None, line
             quantity = int(m.group(1))
@@ -78,25 +75,27 @@ class Crane:
     def read_stacks(self) -> str:
         message = ''
         for stack in self._stacks:
-            message += stack.pop()
+            message += stack.peek()
         return message
 
 
 def part1(use_sample: bool = False) -> None:
     """Solve part 1 of today's problem."""
     file_contents = load_file_contents(use_sample)
-    stacks = FileParser(file_contents).initialize_stacks()
+    parser = FileParser(file_contents)
+    stacks = parser.initialize_stacks()
     crane = Crane(stacks)
-    crane.perform_procedure(file_contents)
+    crane.perform_procedure(parser.instructions)
     return crane.read_stacks()
 
 
 def part2(use_sample: bool = False) -> None:
     """Solve part 1 of today's problem."""
     file_contents = load_file_contents(use_sample)
-    stacks = FileParser(file_contents).initialize_stacks()
+    parser = FileParser(file_contents)
+    stacks = parser.initialize_stacks()
     crane = Crane(stacks)
-    crane.perform_procedure(file_contents, move_together=True)
+    crane.perform_procedure(parser.instructions, move_together=True)
     return crane.read_stacks()
 
 
@@ -130,7 +129,6 @@ class FileParser:
                 stacks[stack_number - 1].append(crate)
         return stacks
 
-
     @property
     def stack_id_line_no(self) -> int:
         """Return the line number containing the stack ID line."""
@@ -150,6 +148,10 @@ class FileParser:
     @property
     def number_of_stacks(self) -> int:
         return int(self.stack_id_line.split()[-1])
+
+    @property
+    def instructions(self) -> list[str]:
+        return self._contents[self.stack_id_line_no + 2:]
 
 
 def initialize_stacks(file_contents):
