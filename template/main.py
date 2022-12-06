@@ -7,7 +7,7 @@ def part1(use_sample: bool = False) -> None:
 
 
 def part2(use_sample: bool = False) -> None:
-    """Solve part 1 of today's problem."""
+    """Solve part 2 of today's problem."""
     file_contents = load_file_contents(use_sample)
 
 
