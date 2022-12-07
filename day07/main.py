@@ -15,8 +15,6 @@ class FilesystemEntityType(Enum):
 
 class FilesystemEntity(ABC):
     entity_type = FilesystemEntityType.UNSPECIFIED
-    is_file = False
-    is_dir = False
 
     def __init__(self, name: str, parent: Optional['Directory']):
         self.name = name
@@ -32,10 +30,17 @@ class FilesystemEntity(ABC):
         else:
             return self.parent.abspath / self.name
 
+    @property
+    def is_file(self) -> bool:
+        return self.entity_type == FilesystemEntityType.FILE
+
+    @property
+    def is_dir(self) -> bool:
+        return self.entity_type == FilesystemEntityType.DIRECTORY
+
 
 class File(FilesystemEntity):
     entity_type = FilesystemEntityType.FILE
-    is_file = True
 
     def __init__(self, name: str, parent: 'Directory', size: int):
         self.name = name
@@ -47,7 +52,6 @@ class File(FilesystemEntity):
 
 class Directory(FilesystemEntity):
     entity_type = FilesystemEntityType.DIRECTORY
-    is_dir = True
 
     def __init__(self, name: str, parent: Optional['Directory'] = None,
                  child_names: Optional[list[str]] = None):
@@ -177,12 +181,9 @@ def sum_small_dirs(fs_map: FilesystemMap) -> int:
     MAX_SIZE = 100000
     valid_dirs: list[Directory] = []
     for entity_path, entity in fs_map.items():
-        print(f'Processing entity: {entity}')
         if not entity.is_dir:
             continue
-        print(f'Found a dir')
         size = fs_map.get_entity_size(entity_path)
-        print(f'Size of {entity_path}: {size}')
         if size > MAX_SIZE:
             continue
         valid_dirs.append(entity_path)
@@ -197,9 +198,28 @@ def part1(use_sample: bool = False) -> int:
     return sum_small_dirs(fs_map)
 
 
+def find_deleteable_paths(fs_map: FilesystemMap) -> list[Path]:
+    TOTAL_DISK_SPACE = 70000000
+    REQUIRED_UNUSED_SPACE = 30000000
+    current_used_space = fs_map.get_entity_size(Path('/'))
+    current_unused = TOTAL_DISK_SPACE - current_used_space
+    space_to_free = REQUIRED_UNUSED_SPACE - current_unused
+    deleteable_paths: list[Directory] = []
+    for entity_path, entity in fs_map.items():
+        if not entity.is_dir:
+            continue
+        if fs_map.get_entity_size(entity_path) > space_to_free:
+            deleteable_paths.append(entity_path)
+    return deleteable_paths
+
+
 def part2(use_sample: bool = False) -> None:
     """Solve part 2 of today's problem."""
     file_contents = load_file_contents(use_sample)
+    commands = create_commands(file_contents)
+    fs_map = crawl_filesystem(commands)
+    deleteable_paths = find_deleteable_paths(fs_map)
+    return min(fs_map.get_entity_size(path) for path in find_deleteable_paths(fs_map))
 
 
 
